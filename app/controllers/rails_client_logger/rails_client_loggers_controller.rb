@@ -2,7 +2,9 @@ module RailsClientLogger
   class RailsClientLoggersController < ApplicationController
     def log
       if %w(debug info warn error fatal).include?(params[:level].to_s)
-        Rails.logger.send(params[:level].to_s.to_sym, params[:message])
+        level = params[:level].to_s.to_sym
+        Rails.logger.send(level, params[:message])
+        ExceptionNotifier.notify_exception(params[:message]) if level == :fatal or level == :error
         head :ok
       else
         head :bad_request
